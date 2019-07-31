@@ -1,0 +1,12 @@
+[package]
+name = "fdn-reverb"
+version = "0.1.0"
+authors = ["Paul Adenot <paul@paul.cx>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+audrey = "0.2.0"
+log = "0.4"
+byteorder = "1.3"
