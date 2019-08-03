@@ -7,8 +7,77 @@ use std::io::prelude::*;
 use std::fs::DirEntry;
 use std::vec;
 use std::ops::Index;
+use std::mem::size_of;
+use std::f32::consts::PI;
 
 const BLOCK_SIZE: usize = 32;
+
+fn clamp<T>(v: T, lower_bound: T, higher_bound: T) -> T
+where T: std::cmp::PartialOrd {
+    if v < lower_bound {
+        return lower_bound;
+    } else if v > higher_bound {
+        return higher_bound;
+    } else {
+        return v;
+    }
+}
+
+fn max<T>(a: T, b: T) -> T 
+where T: std::cmp::PartialOrd {
+    if a > b {
+        b
+    } else {
+        a
+    }
+}
+
+fn dump_wav(file_name: &str, samples: &[i16], channel_count: u32, sample_rate: u32) -> Result<(), std::io::Error> {
+    const COUNT: usize = 44;
+    let wav_header = [
+        // RIFF header
+        0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45,
+        // fmt chunk. We always write 16-bit samples.
+        0x66, 0x6d, 0x74, 0x20, 0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0xFF, 0xFF,
+        0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x10, 0x00,
+        // data chunk
+        0x64, 0x61, 0x74, 0x61, 0xFE, 0xFF, 0xFF, 0x7F];
+    const CHANNEL_OFFSET: usize = 22;
+    const SAMPLE_RATE_OFFSET:usize = 24;
+    const BLOCK_ALIGN_OFFSET:usize = 32;
+    let mut header = [0 as u8; COUNT];
+    let mut written = 0;
+
+    println!("size {}", wav_header.len());
+
+    while written != COUNT {
+        match written {
+            CHANNEL_OFFSET => {
+                (&mut header[CHANNEL_OFFSET..]).write_u16::<LittleEndian>(channel_count as u16).unwrap();
+                written += 2;
+            }
+            SAMPLE_RATE_OFFSET => {
+                (&mut header[SAMPLE_RATE_OFFSET..]).write_u32::<LittleEndian>(sample_rate).unwrap();
+                written += 4;
+            }
+            BLOCK_ALIGN_OFFSET => {
+                (&mut header[BLOCK_ALIGN_OFFSET..]).write_u16::<LittleEndian>((channel_count * 2) as u16).unwrap();
+                written += 2;
+            }
+            _ => {
+                (&mut header[written..]).write_u8(wav_header[written]).unwrap();
+                written += 1;
+            }
+        }
+    }
+
+    let mut file = File::create(file_name).unwrap();
+    file.write_all(&header).unwrap();
+    for i in samples.iter() {
+        file.write_i16::<LittleEndian>(*i).unwrap();
+    }
+    Ok(())
+}
 
 struct Sample {
     name: String,
@@ -165,11 +234,20 @@ mod tests {
             output.resize(input.len(), 0.);
             d.process(&input, &mut output);
             for i in output.iter() {
-                output_pcm.write_f32::<LittleEndian>(*i);
+                // clip and convert to 16bits
+                let clipped;
+                if *i > 1.0 {
+                    clipped  = 1.0;
+                } else if *i < -1.0 {
+                    clipped = -1.0;
+                } else {
+                    clipped = *i;
+                }
+                let sample: i16 = (clipped * (2 << 14) as f32) as i16;
+                output_pcm[j] = sample;
                 j+=1;
             }
         }
-
-        file.write_all(output_pcm.as_slice()).unwrap();
+        dump_wav("out.wav", &output_pcm, s.channels(), s.rate()).unwrap();
     }
 }
