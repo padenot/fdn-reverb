@@ -1,14 +1,14 @@
 pub mod biquad;
 pub mod utils;
 
+use crate::biquad::*;
+use crate::utils::*;
 use audrey::*;
 use log::*;
 use std::fs::DirEntry;
-use std::vec;
-use std::ops::Index;
 use std::mem::size_of;
-use crate::biquad::*;
-use crate::utils::*;
+use std::ops::Index;
+use std::vec;
 
 const BLOCK_SIZE: usize = 32;
 
@@ -38,7 +38,7 @@ impl Sample {
             s.channels(),
             s.duration(),
             s.rate()
-            );
+        );
 
         return s;
     }
@@ -62,10 +62,9 @@ impl Sample {
         if start + size >= self.data.len() {
             real_size = self.data.len() - start;
         }
-        &self.data[start..start+real_size]
+        &self.data[start..start + real_size]
     }
 }
-
 
 impl Index<usize> for Sample {
     type Output = f32;
@@ -76,10 +75,10 @@ impl Index<usize> for Sample {
 }
 
 struct DelayLine {
-    memory:  Vec<f32>,
+    memory: Vec<f32>,
     duration: usize,
     read_index: usize,
-    write_index:  usize
+    write_index: usize,
 }
 
 impl DelayLine {
@@ -90,7 +89,7 @@ impl DelayLine {
             memory: v,
             duration: 0,
             read_index: 0,
-            write_index: 0
+            write_index: 0,
         };
         d.set_duration(max_duration);
         return d;
@@ -126,7 +125,7 @@ impl DelayLine {
         self.write(input);
         self.read(output);
         for it in input.iter().zip(output.iter_mut()) {
-            let (inp,out) = it;
+            let (inp, out) = it;
             *out += inp * 0.5;
         }
     }
@@ -140,7 +139,7 @@ impl DelayLine {
 //     // four low pass
 //     low_pass: [LowPass; 4]
 // }
-// 
+//
 // impl FDNReverb {
 //     fn new() -> FDNReverb {
 //         let all_pass = {
@@ -205,7 +204,7 @@ mod tests {
                 // clip and convert to 16bits
                 let clipped;
                 if *i > 1.0 {
-                    clipped  = 1.0;
+                    clipped = 1.0;
                 } else if *i < -1.0 {
                     clipped = -1.0;
                 } else {
@@ -213,7 +212,7 @@ mod tests {
                 }
                 let sample: i16 = (clipped * (2 << 14) as f32) as i16;
                 output_pcm[j] = sample;
-                j+=1;
+                j += 1;
             }
         }
         dump_wav("out.wav", &output_pcm, s.channels(), s.rate()).unwrap();

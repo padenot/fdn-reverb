@@ -9,7 +9,7 @@ enum FilterType {
     HighShelf,
     Peaking,
     AllPass,
-    Notch
+    Notch,
 }
 
 struct Biquad {
@@ -56,12 +56,12 @@ impl Biquad {
     fn set_low_pass_params(&mut self, cutoff: f32, resonance: f32) {
         let clamped_cutoff = clamp(cutoff, 0., 1.);
 
-        if  clamped_cutoff == 1.  {
+        if clamped_cutoff == 1. {
             // When cutoff is 1, the z-transform is 1.
             self.set_normalized_coefficients(1., 0., 0., 1., 0., 0.);
         } else if cutoff > 0. {
             // Compute biquad coefficients for lowpass filter
-            let clamped_resonance = max(0.0, resonance);  // can't go negative
+            let clamped_resonance = max(0.0, resonance); // can't go negative
             let g = 10.0f32.powf(-0.05 * clamped_resonance);
             let w0 = PI * cutoff;
             let cos_w0 = w0.cos();
@@ -97,7 +97,7 @@ impl Biquad {
             self.set_normalized_coefficients(0., 0., 0., 1., 0., 0.);
         } else if clamped_cutoff > 0. {
             // Compute biquad coefficients for highpass filter
-            let clamped_resonance = max(0.0, resonance);  // can't go negative
+            let clamped_resonance = max(0.0, resonance); // can't go negative
             let g = 10.0f32.powf(-0.05 * clamped_resonance);
             let w0 = PI * cutoff;
             let cos_w0 = w0.cos();
@@ -130,7 +130,7 @@ impl Biquad {
             self.set_normalized_coefficients(a * a, 0., 0., 1., 0., 0.);
         } else if clamped_frequency > 0. {
             let w0 = PI * clamped_frequency;
-            let s = 1.;  // filter slope (1 is max value)
+            let s = 1.; // filter slope (1 is max value)
             let alpha = 0.5 * w0.sin() * ((a + 1. / a) * (1. / s - 1.) + 2.).sqrt();
             let k = w0.cos();
             let k2 = 2. * a.sqrt() * alpha;
@@ -162,7 +162,7 @@ impl Biquad {
             self.set_normalized_coefficients(1., 0., 0., 1., 0., 0.);
         } else if clamped_frequency > 0. {
             let w0 = PI * frequency;
-            let s = 1.;  // filter slope (1 is max value)
+            let s = 1.; // filter slope (1 is max value)
             let alpha = 0.5 * w0.sin() * ((a + 1. / a) * (1. / s - 1.) + 2.).sqrt();
             let k = w0.cos();
             let k2 = 2. * a.sqrt() * alpha;
@@ -314,9 +314,15 @@ impl Biquad {
             self.set_normalized_coefficients(0., 0., 0., 1., 0., 0.);
         }
     }
-    fn set_normalized_coefficients(&mut self,
-                                   b0: f32, b1: f32, b2: f32,
-                                   a0: f32, a1: f32, a2: f32) {
+    fn set_normalized_coefficients(
+        &mut self,
+        b0: f32,
+        b1: f32,
+        b2: f32,
+        a0: f32,
+        a1: f32,
+        a2: f32,
+    ) {
         let a0_inverse = 1. / a0;
 
         self.b0 = b0 * a0_inverse;
@@ -327,14 +333,14 @@ impl Biquad {
     }
     fn process(&mut self, input: &[f32], output: &mut [f32]) {
         for it in input.iter().zip(output.iter_mut()) {
-            let (i,o) = it;
+            let (i, o) = it;
             *o = self.b0 * *i + self.b1 * self.x1 + self.b2 * self.x2
-                - self.a1 * self.y1 - self.a2 * self.y2;
+                - self.a1 * self.y1
+                - self.a2 * self.y2;
             self.x2 = self.x1;
             self.x1 = *i;
             self.y2 = self.y1;
             self.y1 = *o;
-
         }
     }
 }
