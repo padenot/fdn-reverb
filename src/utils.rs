@@ -48,8 +48,6 @@ fn dump_wav(
     let mut header = [0 as u8; COUNT];
     let mut written = 0;
 
-    println!("size {}", wav_header.len());
-
     while written != COUNT {
         match written {
             CHANNEL_OFFSET => {
