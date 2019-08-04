@@ -54,35 +54,31 @@ fn dump_wav(
         match written {
             CHANNEL_OFFSET => {
                 (&mut header[CHANNEL_OFFSET..])
-                    .write_u16::<LittleEndian>(channel_count as u16)
-                    .unwrap();
+                    .write_u16::<LittleEndian>(channel_count as u16)?;
                 written += 2;
             }
             SAMPLE_RATE_OFFSET => {
                 (&mut header[SAMPLE_RATE_OFFSET..])
-                    .write_u32::<LittleEndian>(sample_rate)
-                    .unwrap();
+                    .write_u32::<LittleEndian>(sample_rate)?;
                 written += 4;
             }
             BLOCK_ALIGN_OFFSET => {
                 (&mut header[BLOCK_ALIGN_OFFSET..])
-                    .write_u16::<LittleEndian>((channel_count * 2) as u16)
-                    .unwrap();
+                    .write_u16::<LittleEndian>((channel_count * 2) as u16)?;
                 written += 2;
             }
             _ => {
                 (&mut header[written..])
-                    .write_u8(wav_header[written])
-                    .unwrap();
+                    .write_u8(wav_header[written])?;
                 written += 1;
             }
         }
     }
 
-    let mut file = File::create(file_name).unwrap();
-    file.write_all(&header).unwrap();
+    let mut file = File::create(file_name)?;
+    file.write_all(&header)?;
     for i in samples.iter() {
-        file.write_i16::<LittleEndian>(*i).unwrap();
+        file.write_i16::<LittleEndian>(*i)?;
     }
     Ok(())
 }
