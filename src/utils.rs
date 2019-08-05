@@ -5,6 +5,7 @@ use audrey::*;
 use log::*;
 use std::fs::DirEntry;
 use std::ops::Index;
+use std::mem;
 
 pub fn clamp<T>(v: T, lower_bound: T, higher_bound: T) -> T
 where
@@ -145,4 +146,54 @@ impl Index<usize> for Sample {
     fn index(&self, index: usize) -> &f32 {
         &self.data[index]
     }
+}
+
+pub fn gcd(mut a: u64, mut b: u64) -> u64 {
+    if a < b {
+        mem::swap(&mut a, &mut b);
+    }
+
+    while b != 0 {
+        mem::swap(&mut a, &mut b);
+        b %= a;
+    }
+
+    a
+}
+
+pub fn coprime(a: u64, b: u64) -> bool {
+    gcd(a, b) == 1
+}
+
+pub fn coprime_with_series(proposed: u64, series: &[u64]) -> bool {
+    for i in series.iter() {
+        if !coprime(*i, proposed) {
+            return false;
+        }
+    }
+
+    true
+}
+
+/// Find a series of `count` number that are set coprime, and start at `start`, with a geometric
+/// progression of ratio `factor`
+pub fn coprime_with_progression(start: u64, factor: f32, count: usize) -> Vec<u64>
+{
+    let mut series = Vec::with_capacity(count);
+    let mut current = (start as f32 * factor) as u64;
+
+    series.push(start);
+
+    while series.len() != count {
+        if coprime_with_series(current, &series) {
+            series.push(current);
+            continue;
+        }
+        while !coprime_with_series(current, &series) {
+            current+=1;
+        }
+        series.push(current);
+        current = (current as f32 * factor) as u64;
+    }
+    return series;
 }

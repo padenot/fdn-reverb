@@ -3,40 +3,38 @@ pub mod utils;
 pub mod delay_line; 
 pub mod filter;
 
-// struct FDNReverb {
-//     // four all pass
-//     all_pass: [AllPass; 4],
-//     // four delay lines
-//     delay: [DelayLine; 4],
-//     // four low pass
-//     low_pass: [LowPass; 4]
-// }
-//
-// impl FDNReverb {
-//     fn new() -> FDNReverb {
-//         let all_pass = {
-//             AllPass::new(),
-//             AllPass::new(),
-//             AllPass::new(),
-//             AllPass::new(),
-//         }
-//         let delay = {
-//             DelayLine::new(),
-//             DelayLine::new(),
-//             DelayLine::new(),
-//             DelayLine::new(),
-//         }
-//         let low_pass = {
-//             LowPass::new(),
-//             LowPass::new(),
-//             LowPass::new(),
-//             LowPass::new(),
-//         }
-//         return FDNReverb {
-//             all_pass,delay,low_pass
-//         }
-//     }
-// }
+use crate::filter::Filter;
+use crate::delay_line::DelayLine;
+
+pub struct FDNReverb {
+    // four all pass
+    all_pass: [Filter; 4],
+    // four delay lines
+    delay: [DelayLine; 4],
+}
+
+impl FDNReverb {
+    pub fn new(sample_rate: f32) -> FDNReverb {
+        let all_pass = [
+            Filter::allpass(1.,1., sample_rate),
+            Filter::allpass(1.,1., sample_rate),
+            Filter::allpass(1.,1., sample_rate),
+            Filter::allpass(1.,1., sample_rate),
+        ];
+        let delay = [
+            DelayLine::new(100),
+            DelayLine::new(100),
+            DelayLine::new(100),
+            DelayLine::new(100),
+        ];
+        return FDNReverb {
+            all_pass, delay
+        }
+    }
+    fn process(&mut self, input: &[f32], output: &mut [f32])
+    {
+    }
+}
 
 #[cfg(test)]
 mod tests {
