@@ -1,7 +1,7 @@
 use crate::utils::*;
 use std::f32::consts::PI;
 
-enum FilterType {
+pub enum FilterType {
     LowPass,
     HighPass,
     BandPass,
@@ -12,7 +12,7 @@ enum FilterType {
     Notch,
 }
 
-struct Biquad {
+pub struct Biquad {
     nyquist: f32,
     filter_type: FilterType,
     // Coefficients
@@ -46,14 +46,14 @@ impl Biquad {
             y2: 0.0,
         }
     }
-    fn low_pass(frequency: f32, q: f32, sample_rate: f32) -> Biquad {
+    pub fn low_pass(frequency: f32, q: f32, sample_rate: f32) -> Biquad {
         let nyquist = sample_rate / 2.0;
         let normalized_freq = frequency / nyquist;
         let mut b = Biquad::new(FilterType::LowPass, sample_rate);
         b.set_low_pass_params(normalized_freq, q);
         return b;
     }
-    fn set_low_pass_params(&mut self, cutoff: f32, resonance: f32) {
+    pub fn set_low_pass_params(&mut self, cutoff: f32, resonance: f32) {
         let clamped_cutoff = clamp(cutoff, 0., 1.);
 
         if clamped_cutoff == 1. {
@@ -81,14 +81,14 @@ impl Biquad {
             self.set_normalized_coefficients(0., 0., 0., 1., 0., 0.);
         }
     }
-    fn high_pass(frequency: f32, q: f32, sample_rate: f32) -> Biquad {
+    pub fn high_pass(frequency: f32, q: f32, sample_rate: f32) -> Biquad {
         let nyquist = sample_rate / 2.0;
         let normalized_freq = frequency / nyquist;
         let mut b = Biquad::new(FilterType::HighPass, sample_rate);
         b.set_highpass_params(normalized_freq, q);
         return b;
     }
-    fn set_highpass_params(&mut self, cutoff: f32, resonance: f32) {
+    pub fn set_highpass_params(&mut self, cutoff: f32, resonance: f32) {
         // Limit cutoff to 0 to 1.
         let clamped_cutoff = clamp(cutoff, 0., 1.0);
 
@@ -120,7 +120,7 @@ impl Biquad {
         }
     }
 
-    fn set_low_shelf_params(&mut self, frequency: f32, db_gain: f32) {
+    pub fn set_low_shelf_params(&mut self, frequency: f32, db_gain: f32) {
         let clamped_frequency = clamp(frequency, 0., 1.);
 
         let a = 10.0f32.powf(db_gain / 40.);
@@ -151,7 +151,7 @@ impl Biquad {
         }
     }
 
-    fn set_high_shelf_params(&mut self, frequency: f32, db_gain: f32) {
+    pub fn set_high_shelf_params(&mut self, frequency: f32, db_gain: f32) {
         // Clip frequencies to between 0 and 1, inclusive.
         let clamped_frequency = clamp(frequency, 0.0, 1.0);
 
@@ -183,7 +183,7 @@ impl Biquad {
         }
     }
 
-    fn set_peaking_params(&mut self, frequency: f32, q: f32, db_gain: f32) {
+    pub fn set_peaking_params(&mut self, frequency: f32, q: f32, db_gain: f32) {
         // Clip frequencies to between 0 and 1, inclusive.
         let clamped_frequency = clamp(frequency, 0.0, 1.0);
 
@@ -218,7 +218,7 @@ impl Biquad {
         }
     }
 
-    fn set_allpass_params(&mut self, frequency: f32, q: f32) {
+    pub fn set_allpass_params(&mut self, frequency: f32, q: f32) {
         let clamped_frequency = clamp(frequency, 0.0, 1.0);
 
         let clamped_q = max(0.0, q);
@@ -249,7 +249,7 @@ impl Biquad {
         }
     }
 
-    fn set_notch_params(&mut self, frequency: f32, q: f32) {
+    pub fn set_notch_params(&mut self, frequency: f32, q: f32) {
         let clamped_frequency = clamp(frequency, 0.0, 1.0);
 
         let clamped_q = max(0.0, q);
@@ -280,7 +280,7 @@ impl Biquad {
         }
     }
 
-    fn set_bandpass_params(&mut self, frequency: f32, q: f32) {
+    pub fn set_bandpass_params(&mut self, frequency: f32, q: f32) {
         let clamped_frequency = max(0.0, frequency);
 
         let clamped_q = max(0.0, q);
@@ -314,6 +314,19 @@ impl Biquad {
             self.set_normalized_coefficients(0., 0., 0., 1., 0., 0.);
         }
     }
+    pub fn process(&mut self, input: &[f32], output: &mut [f32]) {
+        for it in input.iter().zip(output.iter_mut()) {
+            let (i, o) = it;
+            *o = self.b0 * *i + self.b1 * self.x1 + self.b2 * self.x2
+                - self.a1 * self.y1
+                - self.a2 * self.y2;
+            self.x2 = self.x1;
+            self.x1 = *i;
+            self.y2 = self.y1;
+            self.y1 = *o;
+        }
+    }
+
     fn set_normalized_coefficients(
         &mut self,
         b0: f32,
@@ -330,17 +343,5 @@ impl Biquad {
         self.b2 = b2 * a0_inverse;
         self.a1 = a1 * a0_inverse;
         self.a2 = a2 * a0_inverse;
-    }
-    fn process(&mut self, input: &[f32], output: &mut [f32]) {
-        for it in input.iter().zip(output.iter_mut()) {
-            let (i, o) = it;
-            *o = self.b0 * *i + self.b1 * self.x1 + self.b2 * self.x2
-                - self.a1 * self.y1
-                - self.a2 * self.y2;
-            self.x2 = self.x1;
-            self.x1 = *i;
-            self.y2 = self.y1;
-            self.y1 = *o;
-        }
     }
 }

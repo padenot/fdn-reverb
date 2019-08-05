@@ -1,6 +1,5 @@
 use byteorder::{LittleEndian, WriteBytesExt};
 use std::fs::File;
-use std::fs::*;
 use std::io::prelude::*;
 
 pub fn clamp<T>(v: T, lower_bound: T, higher_bound: T) -> T
@@ -27,7 +26,7 @@ where
     }
 }
 
-fn dump_wav(
+pub fn dump_wav(
     file_name: &str,
     samples: &[i16],
     channel_count: u32,
