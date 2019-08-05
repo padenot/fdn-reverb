@@ -20,9 +20,9 @@ where
     T: std::cmp::PartialOrd,
 {
     if a > b {
-        b
-    } else {
         a
+    } else {
+        b
     }
 }
 
