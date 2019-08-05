@@ -2,7 +2,6 @@ use crate::utils::*;
 use std::f32::consts::PI;
 
 pub struct Biquad {
-    nyquist: f32,
     // Coefficients
     b0: f32,
     b1: f32,
@@ -19,9 +18,8 @@ pub struct Biquad {
 
 // Based on the web audio api implem: https://webaudio.github.io/web-audio-api/#biquadfilternode
 impl Biquad {
-    pub fn new(sample_rate: f32) -> Biquad {
+    pub fn new() -> Biquad {
         Biquad {
-            nyquist: sample_rate / 2.0,
             b0: 1.0,
             b1: 0.0,
             b2: 0.0,
@@ -66,13 +64,6 @@ impl Biquad {
             // coefficients up correctly.
             self.set_normalized_coefficients(0., 0., 0., 1., 0., 0.);
         }
-    }
-    pub fn highpass(frequency: f32, q: f32, sample_rate: f32) -> Biquad {
-        let nyquist = sample_rate / 2.0;
-        let normalized_freq = frequency / nyquist;
-        let mut b = Biquad::new(sample_rate);
-        b.set_highpass_params(normalized_freq, q);
-        return b;
     }
     pub fn set_highpass_params(&mut self, cutoff: f32, resonance: f32) {
         // Limit cutoff to 0 to 1.
