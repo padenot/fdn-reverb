@@ -32,10 +32,10 @@ impl Biquad {
         }
     }
     pub fn reset(&mut self) {
-            self.x1 = 0.0;
-            self.x2 = 0.0;
-            self.y1 = 0.0;
-            self.y2 = 0.0;
+        self.x1 = 0.0;
+        self.x2 = 0.0;
+        self.y1 = 0.0;
+        self.y2 = 0.0;
     }
     pub fn set_lowpass_params(&mut self, cutoff: f32, resonance: f32) {
         let clamped_cutoff = clamp(cutoff, 0., 1.);

@@ -1,11 +1,11 @@
-use byteorder::{LittleEndian, WriteBytesExt};
-use std::fs::File;
-use std::io::prelude::*;
 use audrey::*;
+use byteorder::{LittleEndian, WriteBytesExt};
 use log::*;
 use std::fs::DirEntry;
-use std::ops::Index;
+use std::fs::File;
+use std::io::prelude::*;
 use std::mem;
+use std::ops::Index;
 
 pub fn clamp<T>(v: T, lower_bound: T, higher_bound: T) -> T
 where
@@ -55,13 +55,11 @@ pub fn dump_wav(
     while written != COUNT {
         match written {
             CHANNEL_OFFSET => {
-                (&mut header[CHANNEL_OFFSET..])
-                    .write_u16::<LittleEndian>(channel_count as u16)?;
+                (&mut header[CHANNEL_OFFSET..]).write_u16::<LittleEndian>(channel_count as u16)?;
                 written += 2;
             }
             SAMPLE_RATE_OFFSET => {
-                (&mut header[SAMPLE_RATE_OFFSET..])
-                    .write_u32::<LittleEndian>(sample_rate)?;
+                (&mut header[SAMPLE_RATE_OFFSET..]).write_u32::<LittleEndian>(sample_rate)?;
                 written += 4;
             }
             BLOCK_ALIGN_OFFSET => {
@@ -70,8 +68,7 @@ pub fn dump_wav(
                 written += 2;
             }
             _ => {
-                (&mut header[written..])
-                    .write_u8(wav_header[written])?;
+                (&mut header[written..]).write_u8(wav_header[written])?;
                 written += 1;
             }
         }
@@ -84,7 +81,6 @@ pub fn dump_wav(
     }
     Ok(())
 }
-
 
 pub struct Sample {
     name: String,
@@ -177,8 +173,7 @@ pub fn coprime_with_series(proposed: u64, series: &[u64]) -> bool {
 
 /// Find a series of `count` number that are set coprime, and start at `start`, with a geometric
 /// progression of ratio `factor`
-pub fn coprime_with_progression(start: u64, factor: f32, count: usize) -> Vec<u64>
-{
+pub fn coprime_with_progression(start: u64, factor: f32, count: usize) -> Vec<u64> {
     let mut series = Vec::with_capacity(count);
     let mut current = (start as f32 * factor) as u64;
 
@@ -190,7 +185,7 @@ pub fn coprime_with_progression(start: u64, factor: f32, count: usize) -> Vec<u6
             continue;
         }
         while !coprime_with_series(current, &series) {
-            current+=1;
+            current += 1;
         }
         series.push(current);
         current = (current as f32 * factor) as u64;

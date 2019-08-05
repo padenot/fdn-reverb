@@ -50,4 +50,3 @@ impl DelayLine {
         self.read(output);
     }
 }
-

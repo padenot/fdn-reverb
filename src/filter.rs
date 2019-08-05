@@ -1,6 +1,6 @@
 use crate::biquad::Biquad;
 
-#[derive(Copy,Clone)]
+#[derive(Copy, Clone)]
 pub enum FilterType {
     LowPass,
     HighPass,
@@ -18,11 +18,17 @@ pub struct Filter {
     frequency: f32,
     q: f32,
     gain: f32,
-    biquad: Biquad
+    biquad: Biquad,
 }
 
 impl Filter {
-    pub fn new(filter_type: FilterType, frequency: f32, q: f32, gain: f32, sample_rate: f32) -> Filter {
+    pub fn new(
+        filter_type: FilterType,
+        frequency: f32,
+        q: f32,
+        gain: f32,
+        sample_rate: f32,
+    ) -> Filter {
         let nyquist = sample_rate / 2.0;
         let frequency_normalized = frequency / nyquist;
         let mut biquad = Biquad::new();
@@ -60,7 +66,7 @@ impl Filter {
             nyquist,
             q,
             gain,
-            biquad
+            biquad,
         }
     }
     pub fn lowpass(frequency: f32, q: f32, sample_rate: f32) -> Filter {
@@ -109,19 +115,24 @@ impl Filter {
                 self.biquad.set_lowpass_params(frequency_normalized, self.q);
             }
             FilterType::HighPass => {
-                self.biquad.set_highpass_params(frequency_normalized, self.q);
+                self.biquad
+                    .set_highpass_params(frequency_normalized, self.q);
             }
             FilterType::BandPass => {
-                self.biquad.set_bandpass_params(frequency_normalized, self.q);
+                self.biquad
+                    .set_bandpass_params(frequency_normalized, self.q);
             }
             FilterType::LowShelf => {
-                self.biquad.set_lowshelf_params(frequency_normalized, self.gain);
+                self.biquad
+                    .set_lowshelf_params(frequency_normalized, self.gain);
             }
             FilterType::HighShelf => {
-                self.biquad.set_highshelf_params(frequency_normalized, self.gain);
+                self.biquad
+                    .set_highshelf_params(frequency_normalized, self.gain);
             }
             FilterType::Peaking => {
-                self.biquad.set_peaking_params(frequency_normalized, self.q, self.gain);
+                self.biquad
+                    .set_peaking_params(frequency_normalized, self.q, self.gain);
             }
             FilterType::AllPass => {
                 self.biquad.set_allpass_params(frequency_normalized, self.q);
