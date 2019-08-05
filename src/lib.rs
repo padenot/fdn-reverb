@@ -1,6 +1,7 @@
 pub mod biquad;
 pub mod utils;
 pub mod delay_line; 
+pub mod filter;
 
 use audrey::*;
 use log::*;

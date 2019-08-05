@@ -1,20 +1,8 @@
 use crate::utils::*;
 use std::f32::consts::PI;
 
-pub enum FilterType {
-    LowPass,
-    HighPass,
-    BandPass,
-    LowShelf,
-    HighShelf,
-    Peaking,
-    AllPass,
-    Notch,
-}
-
 pub struct Biquad {
     nyquist: f32,
-    filter_type: FilterType,
     // Coefficients
     b0: f32,
     b1: f32,
@@ -31,10 +19,9 @@ pub struct Biquad {
 
 // Based on the web audio api implem: https://webaudio.github.io/web-audio-api/#biquadfilternode
 impl Biquad {
-    fn new(filter_type: FilterType, sample_rate: f32) -> Biquad {
+    pub fn new(sample_rate: f32) -> Biquad {
         Biquad {
             nyquist: sample_rate / 2.0,
-            filter_type,
             b0: 1.0,
             b1: 0.0,
             b2: 0.0,
@@ -46,14 +33,13 @@ impl Biquad {
             y2: 0.0,
         }
     }
-    pub fn low_pass(frequency: f32, q: f32, sample_rate: f32) -> Biquad {
-        let nyquist = sample_rate / 2.0;
-        let normalized_freq = frequency / nyquist;
-        let mut b = Biquad::new(FilterType::LowPass, sample_rate);
-        b.set_low_pass_params(normalized_freq, q);
-        return b;
+    pub fn reset(&mut self) {
+            self.x1 = 0.0;
+            self.x2 = 0.0;
+            self.y1 = 0.0;
+            self.y2 = 0.0;
     }
-    pub fn set_low_pass_params(&mut self, cutoff: f32, resonance: f32) {
+    pub fn set_lowpass_params(&mut self, cutoff: f32, resonance: f32) {
         let clamped_cutoff = clamp(cutoff, 0., 1.);
 
         if clamped_cutoff == 1. {
@@ -81,10 +67,10 @@ impl Biquad {
             self.set_normalized_coefficients(0., 0., 0., 1., 0., 0.);
         }
     }
-    pub fn high_pass(frequency: f32, q: f32, sample_rate: f32) -> Biquad {
+    pub fn highpass(frequency: f32, q: f32, sample_rate: f32) -> Biquad {
         let nyquist = sample_rate / 2.0;
         let normalized_freq = frequency / nyquist;
-        let mut b = Biquad::new(FilterType::HighPass, sample_rate);
+        let mut b = Biquad::new(sample_rate);
         b.set_highpass_params(normalized_freq, q);
         return b;
     }
@@ -120,7 +106,7 @@ impl Biquad {
         }
     }
 
-    pub fn set_low_shelf_params(&mut self, frequency: f32, db_gain: f32) {
+    pub fn set_lowshelf_params(&mut self, frequency: f32, db_gain: f32) {
         let clamped_frequency = clamp(frequency, 0., 1.);
 
         let a = 10.0f32.powf(db_gain / 40.);
@@ -151,7 +137,7 @@ impl Biquad {
         }
     }
 
-    pub fn set_high_shelf_params(&mut self, frequency: f32, db_gain: f32) {
+    pub fn set_highshelf_params(&mut self, frequency: f32, db_gain: f32) {
         // Clip frequencies to between 0 and 1, inclusive.
         let clamped_frequency = clamp(frequency, 0.0, 1.0);
 
