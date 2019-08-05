@@ -1,6 +1,10 @@
 use byteorder::{LittleEndian, WriteBytesExt};
 use std::fs::File;
 use std::io::prelude::*;
+use audrey::*;
+use log::*;
+use std::fs::DirEntry;
+use std::ops::Index;
 
 pub fn clamp<T>(v: T, lower_bound: T, higher_bound: T) -> T
 where
@@ -78,4 +82,67 @@ pub fn dump_wav(
         file.write_i16::<LittleEndian>(*i)?;
     }
     Ok(())
+}
+
+
+pub struct Sample {
+    name: String,
+    channels: u32,
+    rate: u32,
+    data: Vec<f32>,
+}
+
+impl Sample {
+    pub fn new(path: &DirEntry) -> Sample {
+        info!("Loading {:?}...", path.path());
+        let mut file = open(&path.path()).unwrap();
+        let desc = file.description();
+        let data: Vec<f32> = file.samples().map(Result::unwrap).collect::<Vec<_>>();
+        let s = Sample {
+            name: path.path().to_str().unwrap().to_string(),
+            channels: desc.channel_count(),
+            rate: desc.sample_rate(),
+            data,
+        };
+
+        info!(
+            "Loaded file: {} channels: {}, duration: {}, rate: {}",
+            s.name(),
+            s.channels(),
+            s.duration(),
+            s.rate()
+        );
+
+        return s;
+    }
+    pub fn channels(&self) -> u32 {
+        self.channels
+    }
+    pub fn frames(&self) -> usize {
+        self.data.len() / self.channels as usize
+    }
+    pub fn duration(&self) -> f32 {
+        (self.data.len() as f32) / self.channels as f32 / self.rate as f32
+    }
+    pub fn rate(&self) -> u32 {
+        self.rate
+    }
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+    pub fn slice(&self, start: usize, size: usize) -> &[f32] {
+        let mut real_size = size;
+        if start + size >= self.data.len() {
+            real_size = self.data.len() - start;
+        }
+        &self.data[start..start + real_size]
+    }
+}
+
+impl Index<usize> for Sample {
+    type Output = f32;
+
+    fn index(&self, index: usize) -> &f32 {
+        &self.data[index]
+    }
 }

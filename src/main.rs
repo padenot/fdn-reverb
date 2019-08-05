@@ -1,8 +1,7 @@
-use fdn_reverb::utils::dump_wav;
+use fdn_reverb::utils::*;
 use fdn_reverb::filter::Filter;
 use fdn_reverb::delay_line::DelayLine;
 use std::fs::read_dir;
-use fdn_reverb::Sample;
 
 const BLOCK_SIZE: usize = 32;
 
