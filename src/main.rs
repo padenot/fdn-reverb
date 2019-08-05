@@ -1,5 +1,5 @@
 use fdn_reverb::utils::dump_wav;
-use fdn_reverb::biquad::Biquad;
+use fdn_reverb::filter::Filter;
 use fdn_reverb::delay_line::DelayLine;
 use std::fs::read_dir;
 use fdn_reverb::Sample;
@@ -19,7 +19,7 @@ fn main() {
     let s = &samples[0];
     let mut d = DelayLine::new(44100);
     d.set_duration(128);
-    let mut b = Biquad::low_pass(300., 2., 44100.);
+    let mut b = Filter::lowpass(1000., 10., 44100.);
     let mut output_pcm = Vec::<i16>::with_capacity(s.frames());
     output_pcm.resize(s.frames(), 0);
 
@@ -43,10 +43,10 @@ fn main() {
         for i in output2.iter() {
             // clip and convert to 16bits
             let clipped;
-            if *i > 1.0 {
-                clipped = 1.0;
-            } else if *i < -1.0 {
-                clipped = -1.0;
+            if *i > 0.9 {
+                clipped = 0.9;
+            } else if *i < -0.9 {
+                clipped = -0.9;
             } else {
                 clipped = *i;
             }
