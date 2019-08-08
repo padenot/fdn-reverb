@@ -94,7 +94,7 @@ impl Filter {
         Filter::new(FilterType::Notch, frequency, q, 1.0, sample_rate)
     }
     pub fn set_frequency(&mut self, frequency: f32) {
-        self.frequency = frequency / self.nyquist;
+        self.frequency = frequency;
         self.set_params_on_biquad();
     }
     pub fn set_q(&mut self, q: f32) {
