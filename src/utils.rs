@@ -192,3 +192,50 @@ pub fn coprime_with_progression(start: u64, factor: f32, count: usize) -> Vec<u6
     }
     return series;
 }
+
+// http://en.wikipedia.org/wiki/Hadamard_matrix sylvester construction
+pub fn hadamard(order: usize) -> Result<Vec<f32>, ()> {
+    fn idx(x: usize, y: usize, w: usize) -> usize {
+        y*w+x
+    }
+    if order == 0 || (order & (order - 1)) != 0 {
+        return Err(());
+    }
+    let mut mat = Vec::<f32>::with_capacity(order*order);
+    mat.resize(order*order, 0.);
+    mat[0] = 1.0;
+
+    let mut n = 1;
+    while n < order {
+        for x in 0..n {
+            for y in 0..n {
+                mat[idx(x + n, y, order)] =  mat[idx(x, y, order)];
+                mat[idx(x, y + n, order)] =  mat[idx(x, y, order)];
+                mat[idx(x + n, y + n, order)] = -mat[idx(x, y, order)];
+            }
+        }
+        n+=n;
+    }
+
+    return Ok(mat);
+}
+
+pub fn matrix_vector_multiply(v: &[f32; 4], m: &[f32; 16]) -> [f32; 4] {
+    let mut r = [0.; 4];
+    for i in 0..4 {
+        for j in 0..4 {
+            r[i] += m[i * 4 + j] * v[j];
+        }
+    }
+    r
+}
+
+pub fn matrix_vector_multiply3(v: &[f32; 3], m: &[f32; 9]) -> [f32; 3] {
+    let mut r = [0.; 3];
+    for i in 0..3 {
+        for j in 0..3 {
+            r[j] += m[i * 3 + j] * v[i];
+        }
+    }
+    r
+}
