@@ -196,25 +196,25 @@ pub fn coprime_with_progression(start: u64, factor: f32, count: usize) -> Vec<u6
 // http://en.wikipedia.org/wiki/Hadamard_matrix sylvester construction
 pub fn hadamard(order: usize) -> Result<Vec<f32>, ()> {
     fn idx(x: usize, y: usize, w: usize) -> usize {
-        y*w+x
+        y * w + x
     }
     if order == 0 || (order & (order - 1)) != 0 {
         return Err(());
     }
-    let mut mat = Vec::<f32>::with_capacity(order*order);
-    mat.resize(order*order, 0.);
+    let mut mat = Vec::<f32>::with_capacity(order * order);
+    mat.resize(order * order, 0.);
     mat[0] = 1.0;
 
     let mut n = 1;
     while n < order {
         for x in 0..n {
             for y in 0..n {
-                mat[idx(x + n, y, order)] =  mat[idx(x, y, order)];
-                mat[idx(x, y + n, order)] =  mat[idx(x, y, order)];
+                mat[idx(x + n, y, order)] = mat[idx(x, y, order)];
+                mat[idx(x, y + n, order)] = mat[idx(x, y, order)];
                 mat[idx(x + n, y + n, order)] = -mat[idx(x, y, order)];
             }
         }
-        n+=n;
+        n += n;
     }
 
     return Ok(mat);
