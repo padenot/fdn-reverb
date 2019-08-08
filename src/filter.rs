@@ -108,6 +108,12 @@ impl Filter {
     pub fn process(&mut self, input: &[f32], output: &mut [f32]) {
         self.biquad.process(input, output);
     }
+    pub fn process_single(&mut self, input: f32, output: &mut f32) {
+        let i = [input; 1];
+        let mut o = [0.0; 1];
+        self.biquad.process(&i, &mut o);
+        *output = o[0];
+    }
     pub fn set_params_on_biquad(&mut self) {
         let frequency_normalized = self.frequency / self.nyquist;
         match self.filter_type {

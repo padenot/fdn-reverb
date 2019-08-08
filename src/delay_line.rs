@@ -49,4 +49,11 @@ impl DelayLine {
         self.write(input);
         self.read(output);
     }
+    pub fn process_single(&mut self, input: f32, output: &mut f32) {
+        let i = [input; 1];
+        let mut o = [0.0; 1];
+        self.write(&i);
+        self.read(&mut o);
+        *output = o[0];
+    }
 }
