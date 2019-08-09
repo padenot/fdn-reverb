@@ -1,5 +1,3 @@
-use fdn_reverb::delay_line::DelayLine;
-use fdn_reverb::filter::Filter;
 use fdn_reverb::utils::*;
 use fdn_reverb::FDNReverb;
 use std::fs::read_dir;
@@ -20,7 +18,7 @@ fn main() {
 
     let s = &samples[0];
     let mut output_pcm = Vec::<i16>::with_capacity(s.frames());
-    output_pcm.resize(s.frames(), 0);
+    output_pcm.resize((s.frames()  as f32 * 2.5) as usize, 0);
 
     let mut i: usize = 0;
     let mut output = Vec::<f32>::with_capacity(BLOCK_SIZE);
@@ -28,26 +26,23 @@ fn main() {
     let mut j = 0;
 
     loop {
-        let input = s.slice(i, BLOCK_SIZE);
+        if j == output_pcm.len() {
+            break;
+        }
+        let mut input = s.slice(i, BLOCK_SIZE);
         i += input.len();
         if input.len() == 0 {
-            break;
+            input = &[0.0; 128];
         }
         output.resize(input.len(), 0.);
         reverb.process(&input, &mut output);
         for (i, o) in input.iter().zip(output.iter()) {
-            // clip and convert to 16bits
-            let clipped;
-            if *o > 0.9 {
-                clipped = 0.9;
-            } else if *o < -0.9 {
-                clipped = -0.9;
-            } else {
-                clipped = *o;
-            }
-            let sample: i16 = ((*i + 0.5 * clipped) * (2 << 14) as f32) as i16;
+            let sample: i16 = ((*i + *o * 0.8) * (2 << 14) as f32) as i16;
             output_pcm[j] = sample;
             j += 1;
+            if j == output_pcm.len() {
+                break;
+            }
         }
     }
     dump_wav("out.wav", &output_pcm, s.channels(), s.rate()).unwrap();
