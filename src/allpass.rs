@@ -32,13 +32,11 @@ impl Allpass {
     }
 
     pub fn process(&mut self, input: f32, output: &mut f32) {
+       let mut delayed_out = 0.0;
        let mut delayed_in = 0.0;
-       let mut delayed_out = [0.0; 1];
-       let mut out = [0.0; 1];
-       self.delay_input.process_single(input, &mut delayed_in);
+       self.delay_input.process(input, &mut delayed_in);
        self.delay_output.read(&mut delayed_out);
-       *output = (-self.gain * input) + delayed_in + (self.gain * delayed_out[0]);
-       out[0] = *output;
-       self.delay_output.write(&out);
+       *output = (-self.gain * input) + delayed_in + (self.gain * delayed_out);
+       self.delay_output.write(*output);
     }
 }

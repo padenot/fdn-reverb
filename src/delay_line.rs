@@ -27,33 +27,22 @@ impl DelayLine {
             self.write_index - duration
         };
     }
-    pub fn write(&mut self, input: &[f32]) {
+    pub fn write(&mut self, input: f32) {
         let mut w = self.write_index;
         let l = self.memory.len();
-        for i in input.iter() {
-            self.memory[w] = *i;
-            w = (w + 1) % l;
-        }
+        self.memory[w] = input;
+        w = (w + 1) % l;
         self.write_index = w;
     }
-    pub fn read(&mut self, output: &mut [f32]) {
+    pub fn read(&mut self, output: &mut f32) {
         let mut r = self.read_index;
         let l = self.memory.len();
-        for o in output.iter_mut() {
-            *o = self.memory[r];
-            r = (r + 1) % l;
-        }
+        *output = self.memory[r];
+        r = (r + 1) % l;
         self.read_index = r;
     }
-    pub fn process(&mut self, input: &[f32], output: &mut [f32]) {
+    pub fn process(&mut self, input: f32, output: &mut f32) {
         self.write(input);
         self.read(output);
-    }
-    pub fn process_single(&mut self, input: f32, output: &mut f32) {
-        let i = [input; 1];
-        let mut o = [0.0; 1];
-        self.write(&i);
-        self.read(&mut o);
-        *output = o[0];
     }
 }

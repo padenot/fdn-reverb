@@ -291,17 +291,14 @@ impl Biquad {
             self.set_normalized_coefficients(0., 0., 0., 1., 0., 0.);
         }
     }
-    pub fn process(&mut self, input: &[f32], output: &mut [f32]) {
-        for it in input.iter().zip(output.iter_mut()) {
-            let (i, o) = it;
-            *o = self.b0 * *i + self.b1 * self.x1 + self.b2 * self.x2
-                - self.a1 * self.y1
-                - self.a2 * self.y2;
-            self.x2 = self.x1;
-            self.x1 = *i;
-            self.y2 = self.y1;
-            self.y1 = *o;
-        }
+    pub fn process(&mut self, input: f32, output: &mut f32) {
+        *output = self.b0 * input + self.b1 * self.x1 + self.b2 * self.x2
+            - self.a1 * self.y1
+            - self.a2 * self.y2;
+        self.x2 = self.x1;
+        self.x1 = input;
+        self.y2 = self.y1;
+        self.y1 = *output;
     }
 
     fn set_normalized_coefficients(
