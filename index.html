@@ -1,0 +1,29 @@
+<canvas height=1024 width=1024>
+<script>
+  var cvs = document.querySelector("canvas");
+  var c = cvs.getContext("2d");
+
+  c.fillRect(0, 512, 1024, 1);
+  c.fillRect(512, 0, 1, 1024);
+  c.fillRect(0, 256, 1024, 1);
+  c.fillRect(256, 0, 1, 1024);
+  c.fillRect(0, 768, 1024, 1);
+  c.fillRect(768, 0, 1, 1024);
+
+  c.fillStyle = "#ddd";
+  for (var i = 0; i < 1024; i++) {
+    c.fillRect(i, 1024 - i, 1, 1);
+  }
+  c.fillStyle = "#a00";
+  for (var i = 0; i < 1024; i++) {
+    var x = 2 * ((i - 512) / 512);
+    // (1/a)*tanh(ax)
+    // var h = 0.001;
+    var h = 2.;
+    var shaped = Math.tanh(h * x);
+    //var shaped = (x / (Math.sqrt(h + x*x)));
+    //var shaped = 
+    console.log(i, x, shaped);
+    c.fillRect(i, 512 - shaped * 512, 1, 1);
+  }
+</script>
