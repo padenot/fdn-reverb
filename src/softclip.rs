@@ -12,6 +12,12 @@ impl Softclip {
         self.hardness = hardness;
     }
     pub fn process(&mut self, input: f32, output: &mut f32) {
-        *output = (input * self.hardness).tanh() / self.hardness;
+        fn fast_tanh(x: f32) -> f32 {
+            let x2 = x * x;
+            let numerator = x * (135135. + x2 * (17325. + x2 * (378. + x2)));
+            let denominator = 135135. + x2 * (62370. + x2 * (3150. + 28. * x2));
+            return numerator / denominator;
+        }
+        *output = fast_tanh(input);
     }
 }
