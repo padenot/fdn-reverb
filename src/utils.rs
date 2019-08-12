@@ -229,13 +229,3 @@ pub fn matrix_vector_multiply(v: &[f32; 4], m: &[f32; 16]) -> [f32; 4] {
     }
     r
 }
-
-pub fn matrix_vector_multiply3(v: &[f32; 3], m: &[f32; 9]) -> [f32; 3] {
-    let mut r = [0.; 3];
-    for i in 0..3 {
-        for j in 0..3 {
-            r[j] += m[i * 3 + j] * v[i];
-        }
-    }
-    r
-}
