@@ -102,7 +102,7 @@ impl Sample {
             data,
         };
 
-        info!(
+        println!(
             "Loaded file: {} channels: {}, duration: {}, rate: {}",
             s.name(),
             s.channels(),
