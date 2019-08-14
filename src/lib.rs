@@ -27,7 +27,7 @@ pub struct FDNReverb {
 impl FDNReverb {
     pub fn new(sample_rate: f32) -> FDNReverb {
         let feedback = [0.; 4];
-        let delay_time = (35. * sample_rate / 1000.) as u64;
+        let delay_time = (45. * sample_rate / 1000.) as u64;
         let allpass_time = (10. * sample_rate / 1000.) as u64;
         let delay_times = coprime_with_progression(delay_time as u64, 1.38, 4);
         let allpass_times = coprime_with_progression(allpass_time, 1.38, 4);
@@ -36,22 +36,25 @@ impl FDNReverb {
         println!("{:?}", allpass_times);
 
         let all_passes = [
-            Allpass::new(allpass_times[0] as f32 / sample_rate, 0.4, sample_rate),
-            Allpass::new(allpass_times[1] as f32 / sample_rate, 0.4, sample_rate),
-            Allpass::new(allpass_times[2] as f32 / sample_rate, 0.4, sample_rate),
-            Allpass::new(allpass_times[3] as f32 / sample_rate, 0.4, sample_rate),
+            Allpass::new(allpass_times[0] as f32 / sample_rate, 0.1, sample_rate),
+            Allpass::new(allpass_times[1] as f32 / sample_rate, 0.1, sample_rate),
+            Allpass::new(allpass_times[2] as f32 / sample_rate, 0.1, sample_rate),
+            Allpass::new(allpass_times[3] as f32 / sample_rate, 0.1, sample_rate),
         ];
         let mut delays = [
-            DelayLine::new((sample_rate as usize) / 4),
-            DelayLine::new((sample_rate as usize) / 4),
-            DelayLine::new((sample_rate as usize) / 4),
-            DelayLine::new((sample_rate as usize) / 4),
+            DelayLine::new((sample_rate as usize)),
+            DelayLine::new((sample_rate as usize)),
+            DelayLine::new((sample_rate as usize)),
+            DelayLine::new((sample_rate as usize)),
         ];
         for (d, t) in delays.iter_mut().zip(delay_times) {
             d.set_duration(t as usize);
         }
         let mut feedback_matrix = [0.0; 16];
         feedback_matrix.copy_from_slice(&hadamard(4).unwrap());
+        feedback_matrix.iter_mut().for_each(|c| *c *= 0.701);
+        println!("{:?}", feedback_matrix);
+
         //let mut feedback_matrix = [
         //    0., 1.,  1., 0.,
         //   -1., 0.,  0.,-1.,
@@ -59,12 +62,11 @@ impl FDNReverb {
         //    0., 1., -1., 0.
         //];
         let lowpasses = [
-            Filter::lowpass(3000., 1.0, sample_rate),
-            Filter::lowpass(3000., 1.0, sample_rate),
-            Filter::lowpass(3000., 1.0, sample_rate),
-            Filter::lowpass(3000., 1.0, sample_rate)
+            Filter::lowpass(3000., 0.3, sample_rate),
+            Filter::lowpass(3000., 0.3, sample_rate),
+            Filter::lowpass(3000., 0.3, sample_rate),
+            Filter::lowpass(3000., 0.3, sample_rate)
         ];
-        feedback_matrix.iter_mut().for_each(|c| *c *= 0.701);
 
         return FDNReverb {
             all_passes,
@@ -80,16 +82,23 @@ impl FDNReverb {
     // [0, 1000]
     pub fn set_size(&mut self, size: f32) {
         // size in meter
-        let duration_to_wall_s = (size / 330.);
+        let s = if size < 1. { 1. } else { size };
+        println!("room size {}", size);
+        let duration_to_wall_s = (s / 330.);
         let duration_to_wall_frames = (duration_to_wall_s * self.sample_rate) as u64;
-        let progression = coprime_with_progression(duration_to_wall_frames, 1.18, 4);
+        println!("duration_to_wall_s {}", duration_to_wall_s);
+        println!("duration_to_wall_frames {}", duration_to_wall_frames);
+        let progression = coprime_with_progression(duration_to_wall_frames, 1.38, 4);
+        println!("progression {:?}", progression);
+        // println!("times: {:?}", progression.iter().map(|t| ((*t as f32) * 1000. / self.sample_rate)*1000.).collect::<Vec<f32>>());
         for (ap, v) in self.all_passes.iter_mut().zip(progression.iter()) {
-            ap.set_delay(*v as f32 * self.sample_rate);
+            println!("set allpass to {}", (*v / 40) as f32 * 1000. / self.sample_rate);
+            ap.set_delay((*v / 40) as f32);
         }
         for (d, v) in self.delays.iter_mut().zip(progression.iter()) {
-            d.set_duration(*v as usize);
+            println!("set delay to {}", (*v * 4)  as f32 * 1000. / self.sample_rate);
+            d.set_duration((*v * 4) as usize);
         }
-        println!("times: {:?}", progression.iter().map(|t| (*t as f32 / self.sample_rate)*1000.).collect::<Vec<f32>>());
     }
     // [0, 1.25]
     pub fn set_decay(&mut self, decay: f32) {
@@ -98,19 +107,21 @@ impl FDNReverb {
     }
     // [0, 1]
     pub fn set_absorbtion(&mut self, abs: f32) {
-        let c = 500. + abs * 20_000.;
+        let c = 500. + abs * 200.;
         for f in self.lowpasses.iter_mut() {
             f.set_frequency(c);
         }
         println!("frequency: {}", c);
     }
     pub fn process(&mut self, input: &[f32], output: &mut [f32]) {
-        for (input, o) in input.iter().zip(output.iter_mut()) {
+        let mut idx = 0;
+        for ii in 0..input.len() {
             let mut a = [0.; 4];
             let mut b = [0.; 4];
             for i in 0..4 {
-                self.lowpasses[i].process((*input + self.feedback[i]), &mut a[i]);
+                self.lowpasses[i].process((input[ii] + self.feedback[i]), &mut a[i]);
             }
+
             for i in 0..4 {
                 self.all_passes[i].process(a[i], &mut b[i]);
             }
@@ -121,13 +132,15 @@ impl FDNReverb {
                 self.softclip.process(a[i], &mut b[i]);
             }
 
-            b = matrix_vector_multiply(&a, &self.feedback_matrix.into());
+            a = matrix_vector_multiply(&b, &self.feedback_matrix.into());
 
             for i in 0..4 {
-                self.feedback[i] = b[i] * self.feedback_amount;
+                self.feedback[i] = a[i] * self.feedback_amount;
             }
 
-            *o = self.feedback.iter().sum::<f32>();
+            output[idx] = self.feedback[0] + self.feedback[2];
+            output[idx+1] = self.feedback[1] + self.feedback[3];
+            idx+=2;
         }
     }
 }
