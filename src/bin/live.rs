@@ -2,13 +2,11 @@ use fdn_reverb::utils::*;
 use fdn_reverb::FDNReverb;
 use std::fs::read_dir;
 use std::{thread, time};
-use std::time::{Duration, Instant};
+use std::time::Instant;
 use monome::*;
 use crossbeam::queue::ArrayQueue;
 use std::sync::Arc;
 use cubeb::StereoFrame;
-
-const BLOCK_SIZE: usize = 32;
 
 struct LoopPlayer {
   sample: Sample,
@@ -35,13 +33,6 @@ enum Parameter {
   Size(f32),
   Decay(f32),
   DryWet(f32)
-}
-
-struct Params {
-    absorbtion: f32,
-    size: f32,
-    decay: f32,
-    drywet: f32
 }
 
 fn main() {
@@ -152,9 +143,7 @@ fn main() {
 
             loop {
                 loop {
-                    let e = monome.poll();
-
-                    match e {
+                    match monome.poll() {
                         Some(MonomeEvent::EncoderDelta { n, delta }) => {
                             let n = n as usize;
                             monome.ring_set(n, led[n] as u32, 0);
@@ -178,7 +167,7 @@ fn main() {
                                 3 => {
                                     Parameter::DryWet((led[n] - 8.) / 48.)
                                 }
-                                e => { 
+                                _ => { 
                                     panic!("ij");
                                 }
                             };

@@ -42,10 +42,10 @@ impl FDNReverb {
             Allpass::new(allpass_times[3] as f32 / sample_rate, 0.1, sample_rate),
         ];
         let mut delays = [
-            DelayLine::new((sample_rate as usize)),
-            DelayLine::new((sample_rate as usize)),
-            DelayLine::new((sample_rate as usize)),
-            DelayLine::new((sample_rate as usize)),
+            DelayLine::new(sample_rate as usize),
+            DelayLine::new(sample_rate as usize),
+            DelayLine::new(sample_rate as usize),
+            DelayLine::new(sample_rate as usize),
         ];
         for (d, t) in delays.iter_mut().zip(delay_times) {
             d.set_duration(t as usize);
@@ -84,7 +84,7 @@ impl FDNReverb {
         // size in meter
         let s = if size < 1. { 1. } else { size };
         println!("room size {}", size);
-        let duration_to_wall_s = (s / 330.);
+        let duration_to_wall_s = s / 330.;
         let duration_to_wall_frames = (duration_to_wall_s * self.sample_rate) as u64;
         println!("duration_to_wall_s {}", duration_to_wall_s);
         println!("duration_to_wall_frames {}", duration_to_wall_frames);
@@ -119,7 +119,7 @@ impl FDNReverb {
             let mut a = [0.; 4];
             let mut b = [0.; 4];
             for i in 0..4 {
-                self.lowpasses[i].process((input[ii] + self.feedback[i]), &mut a[i]);
+                self.lowpasses[i].process(input[ii] + self.feedback[i], &mut a[i]);
             }
 
             for i in 0..4 {
