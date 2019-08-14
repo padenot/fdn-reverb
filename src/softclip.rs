@@ -1,12 +1,10 @@
 pub struct Softclip {
-    hardness: f32
+    hardness: f32,
 }
 
 impl Softclip {
     pub fn new(hardness: f32) -> Softclip {
-        Softclip {
-            hardness
-        }
+        Softclip { hardness }
     }
     pub fn set_hardness(&mut self, hardness: f32) {
         self.hardness = hardness;

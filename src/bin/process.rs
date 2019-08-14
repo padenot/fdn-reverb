@@ -16,7 +16,7 @@ fn main() {
 
     let s = &samples[0];
     let mut output_pcm = Vec::<i16>::with_capacity(s.frames());
-    output_pcm.resize((s.frames()  as f32 * 1.5) as usize, 0);
+    output_pcm.resize((s.frames() as f32 * 1.5) as usize, 0);
 
     let mut reverb = FDNReverb::new(s.rate() as f32);
 

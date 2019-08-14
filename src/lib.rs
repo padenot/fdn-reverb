@@ -1,15 +1,15 @@
+pub mod allpass;
 pub mod biquad;
 pub mod delay_line;
 pub mod filter;
+pub mod softclip;
 pub mod utils;
-pub mod softclip; 
-pub mod allpass;
 
+use crate::allpass::Allpass;
 use crate::delay_line::DelayLine;
 use crate::filter::Filter;
-use crate::utils::{coprime_with_progression, hadamard, matrix_vector_multiply};
 use crate::softclip::Softclip;
-use crate::allpass::Allpass;
+use crate::utils::{coprime_with_progression, hadamard, matrix_vector_multiply};
 
 pub struct FDNReverb {
     // four all pass
@@ -65,7 +65,7 @@ impl FDNReverb {
             Filter::lowpass(3000., 0.3, sample_rate),
             Filter::lowpass(3000., 0.3, sample_rate),
             Filter::lowpass(3000., 0.3, sample_rate),
-            Filter::lowpass(3000., 0.3, sample_rate)
+            Filter::lowpass(3000., 0.3, sample_rate),
         ];
 
         return FDNReverb {
@@ -92,11 +92,17 @@ impl FDNReverb {
         println!("progression {:?}", progression);
         // println!("times: {:?}", progression.iter().map(|t| ((*t as f32) * 1000. / self.sample_rate)*1000.).collect::<Vec<f32>>());
         for (ap, v) in self.all_passes.iter_mut().zip(progression.iter()) {
-            println!("set allpass to {}", (*v / 40) as f32 * 1000. / self.sample_rate);
+            println!(
+                "set allpass to {}",
+                (*v / 40) as f32 * 1000. / self.sample_rate
+            );
             ap.set_delay((*v / 40) as f32);
         }
         for (d, v) in self.delays.iter_mut().zip(progression.iter()) {
-            println!("set delay to {}", (*v * 4)  as f32 * 1000. / self.sample_rate);
+            println!(
+                "set delay to {}",
+                (*v * 4) as f32 * 1000. / self.sample_rate
+            );
             d.set_duration((*v * 4) as usize);
         }
     }
@@ -126,7 +132,7 @@ impl FDNReverb {
                 self.all_passes[i].process(a[i], &mut b[i]);
             }
             for i in 0..4 {
-               self.delays[i].process(b[i], &mut a[i]);
+                self.delays[i].process(b[i], &mut a[i]);
             }
             for i in 0..4 {
                 self.softclip.process(a[i], &mut b[i]);
@@ -139,8 +145,8 @@ impl FDNReverb {
             }
 
             output[idx] = self.feedback[0] + self.feedback[2];
-            output[idx+1] = self.feedback[1] + self.feedback[3];
-            idx+=2;
+            output[idx + 1] = self.feedback[1] + self.feedback[3];
+            idx += 2;
         }
     }
 }
