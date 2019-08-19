@@ -19,8 +19,9 @@ impl DelayLine {
         return d;
     }
     pub fn set_duration(&mut self, duration: usize) {
-        let d = if duration > self.memory.len() - 1 {
-            self.memory.len() - 1
+        let d = if duration > self.memory.len() {
+            println!("clipping duration in delay: {} >= {}", duration, self.memory.len());
+            self.memory.len()
         } else {
             duration
         };
