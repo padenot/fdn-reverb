@@ -108,7 +108,7 @@ fn main() {
 
                 duration += dd.as_nanos();
                 callback_count += 1;
-                if callback_count % 100 == 0 {
+                if callback_count % 50 == 0 {
                     let avg_duration_us = (duration as f32 / callback_count as f32) / 1000.;
                     let avg_duration_per_sample =
                         (duration as f32 / callback_count as f32) / 1000. / 512.;
@@ -119,6 +119,8 @@ fn main() {
                         avg_duration_per_sample,
                         avg_duration_us / budget_us
                     );
+                    callback_count = 0;
+                    duration = 0;
                 }
                 output.len() as isize
             },
