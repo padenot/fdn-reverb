@@ -2,7 +2,6 @@ use crate::delay_line::DelayLine;
 
 pub struct Allpass {
     gain: f32,
-    sample_rate: f32,
     delay_input: DelayLine,
     delay_output: DelayLine,
 }
@@ -16,7 +15,6 @@ impl Allpass {
         d_out.set_duration(frames);
         Allpass {
             gain,
-            sample_rate,
             delay_input: d_in,
             delay_output: d_out,
         }
