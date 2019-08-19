@@ -45,7 +45,7 @@ fn main() {
     }
 
     let s = samples.pop().unwrap();
-    let rate = s.rate();
+    let rate = 48000;
     let mut loop_player = LoopPlayer::new(s);
 
     let mut reverb = FDNReverb::new(rate as f32);
