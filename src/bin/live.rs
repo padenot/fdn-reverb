@@ -62,7 +62,7 @@ fn main() {
     let mut callback_count = 0;
     let mut pcm = Vec::<f32>::with_capacity(1024);
     let mut wet = Vec::<f32>::with_capacity(1024);
-    let mut drywet = 0.5;
+    let mut drywet = 0.3;
 
     let mut builder = cubeb::StreamBuilder::<StereoFrame<f32>>::new();
     builder
