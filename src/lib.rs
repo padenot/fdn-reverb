@@ -27,45 +27,45 @@ pub struct FDNReverb {
 impl FDNReverb {
     pub fn new(sample_rate: f32) -> FDNReverb {
         let feedback = [0.; 4];
-        let delay_time = (45. * sample_rate / 1000.) as u64;
-        let allpass_time = (10. * sample_rate / 1000.) as u64;
-        let delay_times = coprime_with_progression(delay_time as u64, 1.38, 4);
-        let allpass_times = coprime_with_progression(allpass_time, 1.38, 4);
+        let delay_time = (55. * sample_rate / 1000.) as u64;
+        let allpass_time = (20. * sample_rate / 1000.) as u64;
+        let delay_times = coprime_with_progression(delay_time as u64, 1.16, 4);
+        let allpass_times = coprime_with_progression(allpass_time, 1.16, 4);
 
-        println!("{:?}", delay_times);
-        println!("{:?}", allpass_times);
+        println!("{:?}", delay_times.iter().map(|t| *t as f32 / sample_rate * 1000.).collect::<Vec::<f32>>());
+        println!("{:?}", allpass_times.iter().map(|t| *t as f32 / sample_rate * 1000.).collect::<Vec::<f32>>());
 
         let all_passes = [
-            Allpass::new(allpass_times[0] as f32 / sample_rate, 0.1, sample_rate),
-            Allpass::new(allpass_times[1] as f32 / sample_rate, 0.1, sample_rate),
-            Allpass::new(allpass_times[2] as f32 / sample_rate, 0.1, sample_rate),
-            Allpass::new(allpass_times[3] as f32 / sample_rate, 0.1, sample_rate),
+            Allpass::new(allpass_times[0] as f32 / sample_rate, 0.2, sample_rate),
+            Allpass::new(allpass_times[1] as f32 / sample_rate, 0.2, sample_rate),
+            Allpass::new(allpass_times[2] as f32 / sample_rate, 0.2, sample_rate),
+            Allpass::new(allpass_times[3] as f32 / sample_rate, 0.2, sample_rate),
         ];
         let mut delays = [
-            DelayLine::new(sample_rate as usize),
-            DelayLine::new(sample_rate as usize),
-            DelayLine::new(sample_rate as usize),
-            DelayLine::new(sample_rate as usize),
+            DelayLine::new(sample_rate as usize / 5),
+            DelayLine::new(sample_rate as usize / 5),
+            DelayLine::new(sample_rate as usize / 5),
+            DelayLine::new(sample_rate as usize / 5),
         ];
         for (d, t) in delays.iter_mut().zip(delay_times) {
             d.set_duration(t as usize);
         }
         let mut feedback_matrix = [0.0; 16];
         feedback_matrix.copy_from_slice(&hadamard(4).unwrap());
-        feedback_matrix.iter_mut().for_each(|c| *c *= 0.701);
-        println!("{:?}", feedback_matrix);
+        let halfsqrt2 = (2.0 as f32).sqrt() / 2.;
+        feedback_matrix.iter_mut().for_each(|c| *c *= halfsqrt2);
 
-        //let mut feedback_matrix = [
-        //    0., 1.,  1., 0.,
-        //   -1., 0.,  0.,-1.,
-        //    1., 0.,  0., -1.,
-        //    0., 1., -1., 0.
-        //];
+        // let mut feedback_matrix = [
+        //     0., 1.,  1., 0.,
+        //    -1., 0.,  0.,-1.,
+        //     1., 0.,  0., -1.,
+        //     0., 1., -1., 0.
+        // ];
         let lowpasses = [
-            Filter::lowpass(3000., 0.3, sample_rate),
-            Filter::lowpass(3000., 0.3, sample_rate),
-            Filter::lowpass(3000., 0.3, sample_rate),
-            Filter::lowpass(3000., 0.3, sample_rate),
+            Filter::lowpass(2500., 0.3, sample_rate),
+            Filter::lowpass(2500., 0.3, sample_rate),
+            Filter::lowpass(2500., 0.3, sample_rate),
+            Filter::lowpass(2500., 0.3, sample_rate),
         ];
 
         return FDNReverb {
@@ -73,9 +73,9 @@ impl FDNReverb {
             delays,
             feedback_matrix,
             feedback,
-            softclip: Softclip::new(3.),
+            softclip: Softclip::new(1.5),
             lowpasses,
-            feedback_amount: 0.5,
+            feedback_amount: 0.8,
             sample_rate,
         };
     }
