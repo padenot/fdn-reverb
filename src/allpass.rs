@@ -8,10 +8,11 @@ pub struct Allpass {
 
 impl Allpass {
     pub fn new(delay: f32, gain: f32, sample_rate: f32) -> Allpass {
+        println!("sample rate in allpass: {}", sample_rate);
         let frames = (delay * sample_rate) as usize;
         // leave a bit of slack to accomodate changes
-        let mut d_in = DelayLine::new(frames * 2);
-        let mut d_out = DelayLine::new(frames * 2);
+        let mut d_in = DelayLine::new(frames * 5);
+        let mut d_out = DelayLine::new(frames * 5);
         d_in.set_duration(frames);
         d_out.set_duration(frames);
         Allpass {

@@ -79,7 +79,7 @@ fn main() {
                         }
                         Parameter::Size(v) => {
                             println!("set size to {}", v);
-                            reverb.set_size(v);
+                            reverb.set_size(v / 10.);
                         }
                         Parameter::Decay(v) => {
                             println!("set decay to {}", v);
@@ -87,7 +87,7 @@ fn main() {
                         }
                         Parameter::DryWet(v) => {
                             println!("set drywet to {}", v);
-                            drywet = v;
+                            reverb.set_drywet(v);
                         }
                     },
                     Err(crossbeam::queue::PopError) => {}
@@ -99,9 +99,9 @@ fn main() {
                 reverb.process(&pcm, &mut wet);
                 let mut output_idx = 0;
                 for i in 0..pcm.len() {
-                    output[i].l = pcm[i] * (1.0 - drywet) + wet[output_idx] * drywet;
+                    output[i].l = wet[output_idx];
                     output_idx += 1;
-                    output[i].r = pcm[i] * (1.0 - drywet) + wet[output_idx] * drywet;
+                    output[i].r = wet[output_idx];
                     output_idx += 1;
                 }
                 let dd = start.elapsed();
@@ -133,7 +133,7 @@ fn main() {
 
     stream.start().unwrap();
 
-    let mut led = [0.5, 0.3, 0.3, 0.5];
+    let mut led = [0.9, 0.3, 0.3, 0.5];
 
     match Monome::new("/prefix".to_string()) {
         Ok(mut monome) => {

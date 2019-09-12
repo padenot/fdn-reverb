@@ -187,6 +187,13 @@ pub fn coprime_with_progression(start: u64, factor: f32, count: usize) -> Vec<u6
         while !coprime_with_series(current, &series) {
             current += 1;
         }
+        for i in series.iter() {
+            println!("testing {} and {}", current, *i);
+            if (((current as f32) / *i as f32) - 2.0).abs() > 0.05 {
+                println!("{} is too close to {}, nudging", current, *i);
+                current = (current as f32 * 1.05) as u64;
+            }
+        }
         series.push(current);
         current = (current as f32 * factor) as u64;
     }

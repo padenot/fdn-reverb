@@ -16,6 +16,7 @@ impl Softclip {
             let denominator = 135135. + x2 * (62370. + x2 * (3150. + 28. * x2));
             return numerator / denominator;
         }
-        *output = fast_tanh(self.hardness * input) / 2.;
+        //*output = fast_tanh(self.hardness * input) / self.hardness;
+        *output = input / (5. + (input*input)).sqrt();
     }
 }
