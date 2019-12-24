@@ -32,7 +32,9 @@ enum Parameter {
     Absorbtion(f32),
     Size(f32),
     Decay(f32),
-    DryWet(f32),
+    SaturationHardness(f32),
+    Progression(f32),
+    DryWet(f32)
 }
 
 fn main() {
@@ -87,6 +89,14 @@ fn main() {
                         Parameter::Decay(v) => {
                             println!("set decay to {}", v);
                             reverb.set_decay(v);
+                        }
+                        Parameter::SaturationHardness(v) => {
+                            println!("set hardness to {}", v);
+                            reverb.set_hardness(v);
+                        }
+                        Parameter::Progression(v) => {
+                            println!("set progression to {}", v);
+                            reverb.set_progression(v);
                         }
                         Parameter::DryWet(v) => {
                             println!("set drywet to {}", v);
@@ -198,7 +208,9 @@ fn main() {
                             0 => Parameter::Absorbtion(val as f32),
                             1 => Parameter::Size(val as f32),
                             2 => Parameter::Decay(val as f32 / 100.),
-                            3 => Parameter::DryWet(val as f32 / 100.),
+                            3 => Parameter::SaturationHardness(val as f32 / 10.),
+                            4 => Parameter::Progression(1. + val as f32 / 10.),
+                            5 => Parameter::DryWet(val as f32 / 100.),
                             _ => {
                                 panic!("ij");
                             }

@@ -12,6 +12,7 @@ use crate::filter::Filter;
 use crate::onepolelowpass::OnePoleLowPass;
 use crate::softclip::Softclip;
 use crate::utils::{coprime_with_progression, hadamard, matrix_vector_multiply};
+use crate::utils::clamp;
 
 pub struct FDNReverb {
     drywet: f32,
@@ -25,15 +26,19 @@ pub struct FDNReverb {
     softclip: Softclip,
     lowpasses: [OnePoleLowPass; 4],
     sample_rate: f32,
+    size: f32,
+    progression: f32
 }
 
 impl FDNReverb {
     pub fn new(sample_rate: f32) -> FDNReverb {
         let feedback = [0.; 4];
-        let delay_time = (35. * sample_rate / 1000.) as u64;
-        let allpass_time = (20. * sample_rate / 1000.) as u64;
-        let delay_times = coprime_with_progression(delay_time as u64, 1.18, 4);
-        let allpass_times = coprime_with_progression(allpass_time, 1.18, 4);
+        let size = 300.;
+        let delay_time = (size * sample_rate / 1000.) as u64;
+        let allpass_time = (size * sample_rate / 1000.) as u64;
+        let progression = 1.16;
+        let delay_times = coprime_with_progression(delay_time as u64, progression, 4);
+        let allpass_times = coprime_with_progression(allpass_time, progression, 4);
 
         println!("{:?}", delay_times.iter().map(|t| *t as f32 / sample_rate * 1000.).collect::<Vec::<f32>>());
         println!("{:?}", allpass_times.iter().map(|t| *t as f32 / sample_rate * 1000.).collect::<Vec::<f32>>());
@@ -83,22 +88,25 @@ impl FDNReverb {
             delays,
             feedback_matrix,
             feedback,
-            softclip: Softclip::new(1.5),
+            softclip: Softclip::new(1.25),
             lowpasses,
             feedback_amount: 0.8,
             sample_rate,
+            size,
+            progression
         };
     }
     // [0, 1000]
     pub fn set_size(&mut self, size: f32) {
         println!("room size {}", size);
+        self.size = size;
         // size in meter
         let s = if size < 1. { 1. } else { size };
         let duration_to_wall_s = s / 330.;
         let duration_to_wall_frames = (duration_to_wall_s / 5. * self.sample_rate) as u64;
         let duration_to_wall_frames_2 = (duration_to_wall_s / 35. * self.sample_rate) as u64;
-        let progression = coprime_with_progression(duration_to_wall_frames, 1.16, 4);
-        let progression_2 = coprime_with_progression(duration_to_wall_frames_2, 1.19, 4);
+        let progression = coprime_with_progression(duration_to_wall_frames, self.progression, 4);
+        let progression_2 = coprime_with_progression(duration_to_wall_frames_2, self.progression, 4);
         println!("delays {:?}", progression.iter().map(|t| *t as f32 / self.sample_rate * 1000.).collect::<Vec::<f32>>());
         println!("allpasses {:?}", progression_2.iter().map(|t| *t as f32 / self.sample_rate * 1000.).collect::<Vec::<f32>>());
         // all passes are kept below 30ms
@@ -115,7 +123,7 @@ impl FDNReverb {
         println!("feedback: {}", decay);
         self.feedback_amount = decay;
         for a in self.all_passes.iter_mut() {
-            a.set_gain(decay);
+            a.set_gain(clamp(decay, 0.0, 0.6));
         }
     }
     // [0, 20000]
@@ -123,6 +131,16 @@ impl FDNReverb {
         for f in self.lowpasses.iter_mut() {
             f.set_frequency(abs);
         }
+    }
+
+    // [1, 2]
+    pub fn set_hardness(&mut self, hardness: f32) {
+        self.softclip.set_hardness(hardness);
+    }
+
+    pub fn set_progression(&mut self, progression: f32) {
+        self.progression = progression;
+        self.set_size(self.size);
     }
 
     pub fn set_drywet(&mut self, drywet: f32) {

@@ -17,6 +17,6 @@ impl Softclip {
             return numerator / denominator;
         }
         //*output = fast_tanh(self.hardness * input) / self.hardness;
-        *output = input / (5. + (input*input)).sqrt();
+        *output = fast_tanh(input * self.hardness);//input / (5. + (input*input)).sqrt();
     }
 }
