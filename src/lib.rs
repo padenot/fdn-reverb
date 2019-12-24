@@ -155,9 +155,9 @@ impl FDNReverb {
 
             output[idx] = input[ii] * (1.0 - self.drywet) +
                         self.drywet * (self.feedback[0] + self.feedback[2]);
-            output[idx + 1] = input[ii] * (1.0 - self.drywet) + 
-                             self.drywet * (self.feedback[1] + self.feedback[3]);
-            idx += 2;
+            // output[idx + 1] = input[ii] * (1.0 - self.drywet) + 
+            //                  self.drywet * (self.feedback[1] + self.feedback[3]);
+            idx += 1;
         }
     }
     pub fn sample_rate(&self) -> f32 {
