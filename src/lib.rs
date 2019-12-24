@@ -95,10 +95,10 @@ impl FDNReverb {
         // size in meter
         let s = if size < 1. { 1. } else { size };
         let duration_to_wall_s = s / 330.;
-        let duration_to_wall_frames = (duration_to_wall_s / 4. * self.sample_rate) as u64;
-        let duration_to_wall_frames_2 = (duration_to_wall_s / 15. * self.sample_rate) as u64;
-        let progression = coprime_with_progression(duration_to_wall_frames, 1.36, 4);
-        let progression_2 = coprime_with_progression(duration_to_wall_frames_2, 1.38, 4);
+        let duration_to_wall_frames = (duration_to_wall_s / 5. * self.sample_rate) as u64;
+        let duration_to_wall_frames_2 = (duration_to_wall_s / 35. * self.sample_rate) as u64;
+        let progression = coprime_with_progression(duration_to_wall_frames, 1.16, 4);
+        let progression_2 = coprime_with_progression(duration_to_wall_frames_2, 1.19, 4);
         println!("delays {:?}", progression.iter().map(|t| *t as f32 / self.sample_rate * 1000.).collect::<Vec::<f32>>());
         println!("allpasses {:?}", progression_2.iter().map(|t| *t as f32 / self.sample_rate * 1000.).collect::<Vec::<f32>>());
         // all passes are kept below 30ms
