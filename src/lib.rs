@@ -115,16 +115,13 @@ impl FDNReverb {
         println!("feedback: {}", decay);
         self.feedback_amount = decay;
         for a in self.all_passes.iter_mut() {
-            a.set_gain(decay / 1.3);
+            a.set_gain(decay);
         }
     }
-    // [0, 1]
+    // [0, 20000]
     pub fn set_absorbtion(&mut self, abs: f32) {
-        println!("frequency: {}", abs);
-        let c = 500. + abs * 200.;
-        println!("cutoff: {}", c);
         for f in self.lowpasses.iter_mut() {
-            f.set_frequency(c);
+            f.set_frequency(abs);
         }
     }
 
