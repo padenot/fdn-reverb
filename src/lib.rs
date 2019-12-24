@@ -55,7 +55,7 @@ impl FDNReverb {
         }
         let mut feedback_matrix = [0.0; 16];
         feedback_matrix.copy_from_slice(&hadamard(4).unwrap());
-        let halfsqrt2 = (2.0 as f32).sqrt() / 2.;
+        let halfsqrt2 = 1.; //(2.0 as f32).sqrt() / 2.;
         feedback_matrix.iter_mut().for_each(|c| *c *= halfsqrt2);
 
         // let mut feedback_matrix = [
