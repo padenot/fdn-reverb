@@ -7,6 +7,7 @@ use std::fs::read_dir;
 use std::sync::Arc;
 use std::time::Instant;
 use std::{thread, time};
+use std::io;
 
 const PROFILE: bool = false;
 
@@ -186,7 +187,30 @@ fn main() {
     }
 
     loop {
-        let refresh = time::Duration::from_millis(10);
-        thread::sleep(refresh);
+        let mut buffer = String::new();
+        match io::stdin().read_line(&mut buffer) {
+            Ok(len) =>  {
+                let sp = buffer.trim().split(':');
+                let v : Vec<&str> = sp.collect();
+                if let Ok(idx) = v[0].parse::<u32>() {
+                    if let Ok(val) = v[1].parse::<u32>() {
+                        let msg = match idx {
+                            0 => Parameter::Absorbtion(val as f32),
+                            1 => Parameter::Size(val as f32),
+                            2 => Parameter::Decay(val as f32 / 100.),
+                            3 => Parameter::DryWet(val as f32 / 100.),
+                            _ => {
+                                panic!("ij");
+                            }
+                        };
+                        q.push(msg).unwrap();
+                    }
+                }
+
+            }
+            Err(e) => {
+                eprintln!("{:?}", e);
+            }
+        }
     }
 }
