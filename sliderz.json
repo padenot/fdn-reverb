@@ -1,0 +1,8 @@
+{
+"fdn-reverb": [
+    { "name": "abs", "default": 5000, "min": 100, "max": 20000, "step": 1, "unit": "Hz"},
+    { "name": "size", "default": 20, "min": 1, "max": 2000, "step": 1, "unit": "m"},
+    { "name": "feedback", "default": 30, "min": 0, "max": 125, "step": 1, "unit": "%"},
+    { "name": "dry/wet", "default": 30, "min": 0, "max": 100, "step": 1, "unit": "%"}
+  ]
+}
