@@ -8,6 +8,8 @@ use std::sync::Arc;
 use std::time::Instant;
 use std::{thread, time};
 
+const PROFILE: bool = false;
+
 struct LoopPlayer {
     sample: Sample,
     idx: usize,
@@ -108,7 +110,7 @@ fn main() {
 
                 duration += dd.as_nanos();
                 callback_count += 1;
-                if callback_count % 50 == 0 {
+                if PROFILE && callback_count % 50 == 0 {
                     let avg_duration_us = (duration as f32 / callback_count as f32) / 1000.;
                     let avg_duration_per_sample =
                         (duration as f32 / callback_count as f32) / 1000. / 512.;
