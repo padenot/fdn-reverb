@@ -3,11 +3,13 @@ pub mod biquad;
 pub mod delay_line;
 pub mod filter;
 pub mod softclip;
+pub mod onepolelowpass;
 pub mod utils;
 
 use crate::allpass::Allpass;
 use crate::delay_line::DelayLine;
 use crate::filter::Filter;
+use crate::onepolelowpass::OnePoleLowPass;
 use crate::softclip::Softclip;
 use crate::utils::{coprime_with_progression, hadamard, matrix_vector_multiply};
 
@@ -21,7 +23,7 @@ pub struct FDNReverb {
     feedback_matrix: [f32; 16],
     feedback_amount: f32,
     softclip: Softclip,
-    lowpasses: [Filter; 4],
+    lowpasses: [OnePoleLowPass; 4],
     sample_rate: f32,
 }
 
@@ -62,11 +64,17 @@ impl FDNReverb {
         //     1., 0.,  0., -1.,
         //     0., 1., -1., 0.
         // ];
+        // let lowpasses = [
+        //     Filter::lowpass(2500., 0.5f32.sqrt(), sample_rate),
+        //     Filter::lowpass(2500., 0.5f32.sqrt(), sample_rate),
+        //     Filter::lowpass(2500., 0.5f32.sqrt(), sample_rate),
+        //     Filter::lowpass(2500., 0.5f32.sqrt(), sample_rate),
+        // ];
         let lowpasses = [
-            Filter::lowpass(2500., 0.5f32.sqrt(), sample_rate),
-            Filter::lowpass(2500., 0.5f32.sqrt(), sample_rate),
-            Filter::lowpass(2500., 0.5f32.sqrt(), sample_rate),
-            Filter::lowpass(2500., 0.5f32.sqrt(), sample_rate),
+            OnePoleLowPass::new(2500., sample_rate),
+            OnePoleLowPass::new(2500., sample_rate),
+            OnePoleLowPass::new(2500., sample_rate),
+            OnePoleLowPass::new(2500., sample_rate)
         ];
 
         return FDNReverb {
