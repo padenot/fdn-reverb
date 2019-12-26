@@ -29,6 +29,7 @@ impl LoopPlayer {
 }
 
 enum Parameter {
+    PreDelay(f32),
     Absorbtion(f32),
     Size(f32),
     Decay(f32),
@@ -78,6 +79,10 @@ fn main() {
             move |_input: &[StereoFrame<f32>], mut output: &mut [StereoFrame<f32>]| {
                 match q2.pop() {
                     Ok(msg) => match msg {
+                        Parameter::PreDelay(v) => {
+                            println!("set pre-delay to {}", v);
+                            reverb.set_pre_delay(v);
+                        }
                         Parameter::Absorbtion(v) => {
                             println!("set abs to {}", v);
                             reverb.set_absorbtion(v);
@@ -205,12 +210,13 @@ fn main() {
                 if let Ok(idx) = v[0].parse::<u32>() {
                     if let Ok(val) = v[1].parse::<u32>() {
                         let msg = match idx {
-                            0 => Parameter::Absorbtion(val as f32),
-                            1 => Parameter::Size(val as f32),
-                            2 => Parameter::Decay(val as f32 / 100.),
-                            3 => Parameter::SaturationHardness(val as f32 / 10.),
-                            4 => Parameter::Progression(1. + val as f32 / 10.),
-                            5 => Parameter::DryWet(val as f32 / 100.),
+                            0 => Parameter::PreDelay(val as f32),
+                            1 => Parameter::Absorbtion(val as f32),
+                            2 => Parameter::Size(val as f32),
+                            3 => Parameter::Decay(val as f32 / 100.),
+                            4 => Parameter::SaturationHardness(val as f32 / 10.),
+                            5 => Parameter::Progression(1. + val as f32 / 10.),
+                            6 => Parameter::DryWet(val as f32 / 100.),
                             _ => {
                                 panic!("ij");
                             }

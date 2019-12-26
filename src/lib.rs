@@ -16,6 +16,7 @@ use crate::utils::clamp;
 
 pub struct FDNReverb {
     drywet: f32,
+    pre_delay: DelayLine,
     // four all pass
     all_passes: [Allpass; 4],
     // four delay lines
@@ -42,6 +43,9 @@ impl FDNReverb {
 
         println!("{:?}", delay_times.iter().map(|t| *t as f32 / sample_rate * 1000.).collect::<Vec::<f32>>());
         println!("{:?}", allpass_times.iter().map(|t| *t as f32 / sample_rate * 1000.).collect::<Vec::<f32>>());
+
+        let mut pre_delay = DelayLine::new((150. * sample_rate / 1000.) as usize);
+        pre_delay.set_duration(0);
 
         let all_passes = [
             Allpass::new(allpass_times[0] as f32 / sample_rate, 0.6, sample_rate),
@@ -83,6 +87,7 @@ impl FDNReverb {
         ];
 
         return FDNReverb {
+            pre_delay,
             drywet: 0.3,
             all_passes,
             delays,
@@ -119,6 +124,12 @@ impl FDNReverb {
     }
 
     // [0, 1.25]
+    pub fn set_pre_delay(&mut self, pre_delay: f32) {
+        let pre_delay_frames = (pre_delay * self.sample_rate / 1000.) as usize;
+        println!("pre-delay: {}", pre_delay);
+        self.pre_delay.set_duration(pre_delay_frames);
+    }
+    // [0, 1.25]
     pub fn set_decay(&mut self, decay: f32) {
         println!("feedback: {}", decay);
         self.feedback_amount = decay;
@@ -152,8 +163,12 @@ impl FDNReverb {
         for ii in 0..input.len() {
             let mut a = [0.; 4];
             let mut b = [0.; 4];
+            let mut predelayed = 0.0;
+
+            self.pre_delay.process(input[ii], &mut predelayed);
+
             for i in 0..4 {
-                self.lowpasses[i].process(input[ii] + self.feedback[i], &mut a[i]);
+                self.lowpasses[i].process(predelayed + self.feedback[i], &mut a[i]);
             }
             for i in 0..4 {
                 self.all_passes[i].process(a[i], &mut b[i]);
