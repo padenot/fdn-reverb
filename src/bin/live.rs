@@ -35,6 +35,7 @@ enum Parameter {
     Decay(f32),
     SaturationHardness(f32),
     Progression(f32),
+    Width(f32),
     DryWet(f32)
 }
 
@@ -82,6 +83,10 @@ fn main() {
                         Parameter::PreDelay(v) => {
                             println!("set pre-delay to {}", v);
                             reverb.set_pre_delay(v);
+                        }
+                        Parameter::Width(v) => {
+                            println!("set width to {}", v);
+                            reverb.set_width(v);
                         }
                         Parameter::Absorbtion(v) => {
                             println!("set abs to {}", v);
@@ -216,7 +221,8 @@ fn main() {
                             3 => Parameter::Decay(val as f32 / 100.),
                             4 => Parameter::SaturationHardness(val as f32 / 10.),
                             5 => Parameter::Progression(1. + val as f32 / 10.),
-                            6 => Parameter::DryWet(val as f32 / 100.),
+                            6 => Parameter::Width(val as f32 / 100.),
+                            7 => Parameter::DryWet(val as f32 / 100.),
                             _ => {
                                 panic!("ij");
                             }

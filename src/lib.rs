@@ -28,7 +28,8 @@ pub struct FDNReverb {
     lowpasses: [OnePoleLowPass; 4],
     sample_rate: f32,
     size: f32,
-    progression: f32
+    progression: f32,
+    width: f32
 }
 
 impl FDNReverb {
@@ -98,7 +99,8 @@ impl FDNReverb {
             feedback_amount: 0.8,
             sample_rate,
             size,
-            progression
+            progression,
+            width: 1.0
         };
     }
     // [0, 1000]
@@ -154,6 +156,10 @@ impl FDNReverb {
         self.set_size(self.size);
     }
 
+    pub fn set_width(&mut self, width: f32) {
+        self.width = width;
+    }
+
     pub fn set_drywet(&mut self, drywet: f32) {
         println!("drywet: {}", drywet);
         self.drywet = drywet;
@@ -186,10 +192,19 @@ impl FDNReverb {
                 self.feedback[i] = a[i] * self.feedback_amount;
             }
 
-            output[idx] = input[ii] * (1.0 - self.drywet) +
-                        self.drywet * (self.feedback[0] + self.feedback[2]);
-            output[idx + 1] = input[ii] * (1.0 - self.drywet) + 
-                             self.drywet * (self.feedback[1] + self.feedback[3]);
+            let mut l = input[ii] * (1.0 - self.drywet) + self.drywet * (self.feedback[0] + self.feedback[2]);
+            let mut r = input[ii] * (1.0 - self.drywet) + self.drywet * (self.feedback[1] + self.feedback[3]);
+
+            let mid = (l + r) / 2.;
+            let mut side = (l - r) / 2.;
+
+            side *= self.width;
+
+            l = mid + side;
+            r = mid - side;
+
+            output[idx] = l;
+            output[idx + 1] = r;
             idx += 2;
         }
     }
